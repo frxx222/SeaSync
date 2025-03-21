@@ -1,0 +1,136 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body{
+    background-color: grey;
+}
+.container{
+    background-color: white;
+    margin: 10px;
+    margin-right: 50px;
+    margin-bottom: 50px;
+    height: 100rem;
+    width: auto;
+ 
+}
+
+img{
+    margin: 0px 0px 0px 10px;
+    width: 130px;
+    height: 130px;
+}
+
+.title {
+    position: relative;
+    top: -15px;
+    left: 20px;
+    font-size: 10px;
+}
+
+.title1 {
+    position: relative;
+    top: -15px;
+    left: 20px;
+    color: blue;
+}
+
+.title-blue{
+    color: blue;
+    font-size: 3px;
+}
+
+.title5 {
+    line-height: 130%;
+}
+
+.main-content{
+    position: relative;
+    margin: 70px;
+    top: -140px;
+    
+}
+
+.ltp-permit{
+    text-align: center;
+    padding-bottom: 25px;
+}
+
+.date-no{
+    text-align: right;
+    
+}
+
+.ltp-date {
+    padding-top: 15px;
+    border: none;
+    font-size: 14px;
+}
+
+.ltp-no {
+    padding-bottom: 10px;
+    width: 700px;
+    border: none;
+    font-size: 14px;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.ltp-no l{
+    font-size: 14px;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.content1{
+    display: flex;
+    padding-top: 20px;
+    text-align: justify;
+    text-justify: inter-word;
+}
+.el{
+    width: 45rem;
+}
+
+.tableA{
+    margin-top: 50px;
+}
+
+table, th,td{
+    text-align: center;
+    border: 1px solid;
+    
+}
+
+.checkbox td{
+    padding: 10px;
+    text-align: justify;
+    text-justify: inter-word;
+    border-right-style: hidden;
+    border-left-style: hidden;
+
+}
+
+.dry-seal .quar {
+    padding-top: 0px;
+    padding-left: 15px;
+    padding-right: 15px;
+    text-align: left;
+    border-style:  hidden;
+}
+.dry-seal img{
+   
+   align-items: center;
+  
+}
+
+.dry-seal .quar1{
+    text-align: center;
+    padding-bottom: 20px;
+    position: absolute;
+}
+
+.dry-seal .quar2{
+    text-align: center;
+    padding-bottom: 20px;
+    position: absolute;
+}

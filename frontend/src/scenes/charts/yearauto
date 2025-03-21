@@ -1,0 +1,188 @@
+
+// import React, { useState, useEffect } from "react";
+// import {
+//   FormControl,
+//   MenuItem,
+//   InputLabel,
+//   Box,
+//   Select,
+// } from "@mui/material";
+// import Header from "../../components/Header";
+// import {
+//   AreaChart,
+//   Area,
+//   BarChart,
+//   Bar,
+//   XAxis,
+//   YAxis,
+//   CartesianGrid,
+//   Tooltip,
+//   ResponsiveContainer,
+//   Legend,
+// } from "recharts";
+// import { useTheme } from "@mui/material";
+
+// const Overview = () => {
+//   const theme = useTheme();
+//   const [view, setView] = useState("monthly");
+//   const [data, setData] = useState([]);
+//   const [isLoading, setIsLoading] = useState(true);
+//   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+//   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  
+//   // Update years dynamically based on the current year
+//   const currentYear = new Date().getFullYear();
+//   const yearsToShow = 5; // Number of years to display in the dropdown
+//   const years = Array.from({ length: yearsToShow }, (_, i) => currentYear - i);
+
+//   const fetchData = async () => {
+//     setIsLoading(true);
+//     try {
+//       let response;
+//       if (view === "daily") {
+//         response = await fetch(
+//           `${import.meta.env.VITE_BASE_URL}/api/supply/daily?month=${selectedMonth}&year=${selectedYear}`
+//         );
+//       } else if (view === "monthly") {
+//         response = await fetch(
+//           `${import.meta.env.VITE_BASE_URL}/api/supply/monthly`
+//         );
+//       }
+
+//       if (!response.ok) throw new Error("Network response was not ok");
+//       const result = await response.json();
+
+//       if (view === "daily") {
+//         const filteredData = result[0].data
+//           .filter((entry) => {
+//             const entryDate = new Date(entry.month);
+//             return (
+//               entryDate.getFullYear() === selectedYear &&
+//               entryDate.getMonth() + 1 === selectedMonth
+//             );
+//           })
+//           .map((entry) => ({
+//             ...entry,
+//             day: new Date(entry.month).getDate(),
+//           }));
+//         setData(filteredData);
+//       } else if (view === "monthly") {
+//         const months = [
+//           { month: "Jan", supply: 0 },
+//           { month: "Feb", supply: 0 },
+//           { month: "Mar", supply: 0 },
+//           { month: "Apr", supply: 0 },
+//           { month: "May", supply: 0 },
+//           { month: "Jun", supply: 0 },
+//           { month: "Jul", supply: 0 },
+//           { month: "Aug", supply: 0 },
+//           { month: "Sep", supply: 0 },
+//           { month: "Oct", supply: 0 },
+//           { month: "Nov", supply: 0 },
+//           { month: "Dec", supply: 0 },
+//         ];
+
+//         const filteredMonthlyData = result[0]?.data.filter(
+//           (entry) => new Date(entry.month).getFullYear() === selectedYear
+//         );
+
+//         const monthlyData = months.map((defaultMonth, index) => {
+//           const monthData = filteredMonthlyData.find(
+//             (entry) => new Date(entry.month).getMonth() === index
+//           );
+//           return {
+//             ...defaultMonth,
+//             supply: monthData ? monthData.supply : defaultMonth.supply,
+//           };
+//         });
+
+//         setData(monthlyData);
+//       }
+//     } catch (error) {
+//       console.error("Error fetching data:", error);
+//     } finally {
+//       setIsLoading(false);
+//     }
+//   };
+
+//   useEffect(() => {
+//     fetchData();
+//   }, [view, selectedMonth, selectedYear]);
+
+//   if (isLoading) return <div>Loading...</div>;
+
+//   return (
+//     <Box m="4.5rem 2.5rem" width='75vw'>
+//       <Header
+//         title="OVERVIEW"
+//         subtitle="Overview of total supply for Daily and Monthly"
+//       />
+//       <Box height="70vh" mt="2rem">
+//         <Box display="flex" alignItems="center" mb={2}>
+//           <FormControl sx={{ mr: 2 }}>
+//             <InputLabel>View</InputLabel>
+//             <Select
+//               value={view}
+//               label="View"
+//               onChange={(e) => setView(e.target.value)}
+//             >
+//               <MenuItem value="daily">Daily</MenuItem>
+//               <MenuItem value="monthly">Monthly</MenuItem>
+//             </Select>
+//           </FormControl>
+
+//           {view === "daily" && (
+//             <Select
+//               value={selectedMonth}
+//               onChange={(e) => setSelectedMonth(e.target.value)}
+//               displayEmpty
+//               sx={{ mr: 2 }}
+//             >
+//               {[...Array(12)].map((_, index) => (
+//                 <MenuItem key={index + 1} value={index + 1}>
+//                   {new Date(0, index).toLocaleString("default", { month: "long" })}
+//                 </MenuItem>
+//               ))}
+//             </Select>
+//           )}
+          
+//           <Select
+//             value={selectedYear}
+//             onChange={(e) => setSelectedYear(Number(e.target.value))}
+//             displayEmpty
+//           >
+//             {years.map((year) => (
+//               <MenuItem key={year} value={year}>
+//                 {year}
+//               </MenuItem>
+//             ))}
+//           </Select>
+//         </Box>
+
+//         <ResponsiveContainer width="100%" height="100%">
+//           {view === "daily" ? (
+//             <AreaChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+//               <CartesianGrid />
+//               <XAxis dataKey="day" interval={0} />
+//               <YAxis />
+//               <Tooltip />
+//               <Legend />
+//               <Area type="monotone" dataKey="supply" stroke="#2563eb" fill="#2563eb" />
+//             </AreaChart>
+//           ) : (
+//             <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+//               <CartesianGrid />
+//               <XAxis dataKey="month" interval={0} />
+//               <YAxis />
+//               <Tooltip />
+//               <Legend />
+//               <Bar dataKey="supply" fill="#2563eb" />
+//             </BarChart>
+//           )}
+//         </ResponsiveContainer>
+//       </Box>
+//     </Box>
+//   );
+// };
+
+// export default Overview;

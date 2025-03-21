@@ -1,0 +1,213 @@
+import React, { useState } from 'react';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  RadioGroup,a
+  FormControlLabel,
+  Radio,
+  Alert,
+} from '@mui/material';
+
+const MarketDemandDialog = () => {
+  const [formData, setFormData] = useState({
+    source: '',
+    fishType: '',
+    weight: '',
+    demandType: 'daily',
+  });
+  const [demandStatus, setDemandStatus] = useState(null);
+  const [showLTPConfirm, setShowLTPConfirm] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  const handleInputChange = (name, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const checkDemand = async () => {
+    try {
+      const response = await fetch('http://localhost:4000/api/local-demand/unsatisfied');
+      const demands = await response.json();
+      
+      console.log('Demands:', demands); // Debug log
+      console.log('Form data:', formData); // Debug log
+
+      const relevantDemand = demands.find(
+        d => d.municipality === formData.source && d.fishType === formData.fishType
+      );
+      
+      console.log('Relevant demand:', relevantDemand); // Debug log
+
+      if (relevantDemand) {
+        const isMet = formData.demandType === 'daily'
+          ? Number(formData.weight) <= relevantDemand.shortage
+          : Number(formData.weight) <= relevantDemand.shortage * 30;
+
+        setDemandStatus({
+          isMet,
+          shortage: relevantDemand.shortage,
+          supplied: relevantDemand.supplied,
+        });
+
+        if (isMet) {
+          setShowLTPConfirm(true);
+        }
+      } else {
+        setDemandStatus({
+          isMet: false,
+          shortage: 0,
+          supplied: 0,
+        });
+      }
+    } catch (error) {
+      console.error('Error checking demand:', error);
+      setDemandStatus({
+        isMet: false,
+        error: 'Failed to check demand',
+      });
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.source || !formData.fishType || !formData.weight) {
+      alert('Please fill all required fields');
+      return;
+    }
+    await checkDemand();
+  };
+
+  const handleLTPConfirm = (confirmed) => {
+    if (confirmed) {
+      window.location.href = '/transport-permit';
+    } else {
+      handleClose();
+    }
+  };
+
+  const handleClose = () => {
+    setFormData({
+      source: '',
+      fishType: '',
+      weight: '',
+      demandType: 'daily',
+    });
+    setDemandStatus(null);
+    setShowLTPConfirm(false);
+    setOpen(false);
+  };
+
+  return (
+    <div>
+      <Button variant="outlined" color='secondary' onClick={() => setOpen(true)}>
+        Check Market Demand
+      </Button>
+
+      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
+        <DialogTitle>Check Market Demand</DialogTitle>
+        <DialogContent>
+          <form id="demandForm" onSubmit={handleSubmit}>
+            <FormControl fullWidth margin="normal">
+              <InputLabel>Municipality</InputLabel>
+              <Select
+                value={formData.source}
+                onChange={(e) => handleInputChange('source', e.target.value)}
+                required
+              >
+                {['Boac', 'Mogpog', 'Gasan', 'Buenavista', 'Torrijos', 'Sta Cruz'].map((mun) => (
+                  <MenuItem key={mun} value={mun}>
+                    {mun}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <TextField
+              fullWidth
+              margin="normal"
+              select
+              label="Fish Type"
+              value={formData.fishType}
+              onChange={(e) => handleInputChange('fishType', e.target.value)}
+              required
+            >
+              <MenuItem value="Galunggong">Galunggong</MenuItem>
+              <MenuItem value="Tulingan">Tulingan</MenuItem>
+              <MenuItem value="Gulyasan">Gulyasan</MenuItem>
+              <MenuItem value="Dilis">Dilis</MenuItem>
+              <MenuItem value="Dalagang-Bukid">Dalagang-Bukid</MenuItem>
+              <MenuItem value="Tunsoy">Tunsoy</MenuItem>
+              <MenuItem value="Tambakol">Tambakol</MenuItem>
+              <MenuItem value="Maya-maya">Maya-maya</MenuItem>
+              <MenuItem value="Dried Fish">Dried Fish</MenuItem>
+            </TextField>
+            <TextField
+              fullWidth
+              margin="normal"
+              label="Weight (kgs)"
+              type="number"
+              value={formData.weight}
+              onChange={(e) => handleInputChange('weight', e.target.value)}
+              required
+            />
+
+            <FormControl margin="normal">
+              <RadioGroup
+                row
+                value={formData.demandType}
+                onChange={(e) => handleInputChange('demandType', e.target.value)}
+              >
+                <FormControlLabel value="daily" control={<Radio color='success'/>} label="Daily" />
+                <FormControlLabel value="monthly" control={<Radio color='success' />} label="Monthly" />
+              </RadioGroup>
+            </FormControl>
+          </form>
+
+          {demandStatus && (
+            <Alert 
+              severity={demandStatus.isMet ? 'success' : 'error'} 
+              style={{ marginTop: '16px' }}
+            >
+              {demandStatus.error ? demandStatus.error :
+                demandStatus.isMet
+                  ? 'Market demand is met! You can proceed with LTP permit.'
+                  : `Market demand not met. Current supply: ${demandStatus.supplied}kg, Shortage: ${demandStatus.shortage}kg`
+              }
+            </Alert>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} color='dark'>Cancel</Button>
+          <Button type="submit" form="demandForm" color='success' variant="contained">
+            Check Demand
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={showLTPConfirm} onClose={() => setShowLTPConfirm(false)}>
+        <DialogTitle>Proceed to LTP Permit?</DialogTitle>
+        <DialogContent>
+          Would you like to proceed with the LTP permit application?
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => handleLTPConfirm(false)} color='error'>No</Button>
+          <Button onClick={() => handleLTPConfirm(true)} color='success' variant="contained">
+            Yes
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
+  );
+};
+
+export default MarketDemandDialog;
